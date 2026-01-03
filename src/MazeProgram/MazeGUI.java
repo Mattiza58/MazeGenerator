@@ -3,6 +3,9 @@ package MazeProgram;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
@@ -12,6 +15,7 @@ import java.util.Random;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 /**
  * The Graphical Components and Model behind the Maze Application
@@ -90,13 +94,15 @@ public class MazeGUI {
         mazePanel.setBackground(Color.BLACK);
 
         setup(CELL_WIDTH, cells); // set up the grid
-
         GridCell cellGrid = new GridCell(cells, currentColor); // create the grid of cells
         mazePanel.add(cellGrid, BorderLayout.CENTER);
         frame.add(mazePanel, BorderLayout.CENTER);
         frame.setBackground(Color.BLACK);
+        mazePanel.repaint();
 
         JButton generateButton = new JButton("Generate New Maze");
+
+        MazeGenerator mazeGenerator = new MazeGenerator(1, cellGrid, mazePanel, cells);
 
         /*
         Button action listener that paints a new grid
@@ -104,10 +110,15 @@ public class MazeGUI {
         generateButton.addActionListener(e -> {
             cells = new ArrayList<>();
             setup(CELL_WIDTH, cells);
+//            mazeGenerator(cells, cellGrid, mazePanel, frame);
+            mazeGenerator.updateCells(cells);
+            mazeGenerator.generateMaze();
             cellGrid.updateCells(cells);
             mazePanel.repaint();
             frame.pack();
         });
+
+
 
         mazePanel.add(generateButton, BorderLayout.SOUTH);
 
@@ -121,7 +132,7 @@ public class MazeGUI {
         settingsPanel.add(settingsButton, BorderLayout.NORTH);
         mazePanel.add(settingsPanel, BorderLayout.EAST);
 
-        SettingsWindow settingsWindow = new SettingsWindow(cellGrid, mazePanel);
+        SettingsWindow settingsWindow = new SettingsWindow(cellGrid, mazePanel, mazeGenerator);
 
         /*
         Allows the settingsWindow to be shown
@@ -136,6 +147,9 @@ public class MazeGUI {
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+
+
+
 
     }
 
@@ -199,7 +213,135 @@ public class MazeGUI {
 
         }
 
-        mazeGenerator(cells);
+    }
+
+    private static void mazeGeneratorAnimate(ArrayList<Cell> cells, GridCell cellGrid, JPanel panel, JButton reset){
+        assert cells != null && !cells.isEmpty();
+        Deque<Cell> stack = new LinkedList<>();
+        HashSet<String> visited = new HashSet<>();
+        Random rand = new Random();
+
+        int ranIndex = rand.nextInt(cells.size());
+
+        Cell srcCell = cells.get(ranIndex); // choose the inital cell
+        visited.add(srcCell.toString()); // mark it as visited
+        stack.push(srcCell); // push the cell onto the stack
+
+        ActionListener gridDelay = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("timer going");
+                if (!stack.isEmpty()) {
+                    Cell currentCell = stack.pop();
+                    // pop the cell off the stack and mark it as current
+                    NeighborPair neighbor = selectNeighbor(currentCell, visited);
+                    if (neighbor != null) { // if the cell has a neighbor that has not been visited
+                        stack.push(currentCell); // push the current cell onto the stack
+                /*
+                Remove the wall between the current neighbor and the current cell
+                 */
+                        switch (neighbor.type()) {
+                            case "left":
+                                currentCell.walls()[3] = false;
+                                neighbor.cell().walls()[1] = false;
+                                currentCell.neighbors().remove(neighbor);
+                                break;
+                            case "right":
+                                currentCell.walls()[1] = false;
+                                neighbor.cell().walls()[3] = false;
+                                currentCell.neighbors().remove(neighbor);
+                                break;
+                            case "top":
+                                currentCell.walls()[0] = false;
+                                neighbor.cell().walls()[2] = false;
+                                currentCell.neighbors().remove(neighbor);
+                                break;
+                            case "bottom":
+                                currentCell.walls()[2] = false;
+                                neighbor.cell().walls()[0] = false;
+                                currentCell.neighbors().remove(neighbor);
+                                break;
+                        }
+
+                        visited.add(neighbor.cell().toString()); // mark the chosen cell as visited
+                        stack.push(neighbor.cell()); // push the chosen cell onto the stack
+                    }
+                    cellGrid.updateCells(cells);
+                    cellGrid.repaint();
+                    panel.repaint();
+                }
+                else{
+                    ((Timer) (e.getSource())).stop();
+                    System.out.println("timer stopped");
+                }
+            }
+        };
+        Timer timer = new Timer(5, gridDelay);
+        timer.setRepeats(true);
+        timer.start();
+    }
+
+    private static void mazeGenerator2(ArrayList<Cell> cells, GridCell cellGrid, JPanel panel, JFrame frame) {
+        assert cells != null && !cells.isEmpty();
+        Deque<Cell> stack = new LinkedList<>();
+        HashSet<String> visited = new HashSet<>();
+        Random rand = new Random();
+
+        int ranIndex = rand.nextInt(cells.size());
+
+        Cell srcCell = cells.get(ranIndex); // choose the inital cell
+        visited.add(srcCell.toString()); // mark it as visited
+        stack.push(srcCell); // push the cell onto the stack
+
+        while (!stack.isEmpty()) {
+            Timer timer = new Timer(10, evt -> {
+                Cell currentCell = stack.pop();
+                // pop the cell off the stack and mark it as current
+                NeighborPair neighbor = selectNeighbor(currentCell, visited);
+                if (neighbor != null) { // if the cell has a neighbor that has not been visited
+                    stack.push(currentCell); // push the current cell onto the stack
+                /*
+                Remove the wall between the current neighbor and the current cell
+                 */
+                    switch (neighbor.type()) {
+                        case "left":
+                            currentCell.walls()[3] = false;
+                            neighbor.cell().walls()[1] = false;
+                            currentCell.neighbors().remove(neighbor);
+                            break;
+                        case "right":
+                            currentCell.walls()[1] = false;
+                            neighbor.cell().walls()[3] = false;
+                            currentCell.neighbors().remove(neighbor);
+                            break;
+                        case "top":
+                            currentCell.walls()[0] = false;
+                            neighbor.cell().walls()[2] = false;
+                            currentCell.neighbors().remove(neighbor);
+                            break;
+                        case "bottom":
+                            currentCell.walls()[2] = false;
+                            neighbor.cell().walls()[0] = false;
+                            currentCell.neighbors().remove(neighbor);
+                            break;
+                    }
+
+                    visited.add(neighbor.cell().toString()); // mark the chosen cell as visited
+                    stack.push(neighbor.cell()); // push the chosen cell onto the stack
+                    cellGrid.updateCells(cells);
+                    cellGrid.repaint();
+                    panel.repaint();
+                    frame.pack();
+                }
+            });
+            timer.start();
+
+        }
+
+    }
+
+    private static void mazeGen(ArrayList<Cell> cells){
+
     }
 
 
@@ -257,6 +399,7 @@ public class MazeGUI {
                         currentCell.neighbors().remove(neighbor);
                         break;
                 }
+
                 visited.add(neighbor.cell().toString()); // mark the chosen cell as visited
                 stack.push(neighbor.cell()); // push the chosen cell onto the stack
             }

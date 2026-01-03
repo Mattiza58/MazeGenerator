@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.Random;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -25,18 +26,22 @@ public class SettingsWindow extends JDialog {
      */
     private final JPanel mainPanel;
 
+    private final MazeGenerator mazeGenerator;
+
     /**
      * Constructs a new 'SettingsWindow' object.
      */
-    public SettingsWindow(GridCell cellGrid, JPanel mainPanel) {
+    public SettingsWindow(GridCell cellGrid, JPanel mainPanel, MazeGenerator mazeGenerator) {
         this.cellGrid = cellGrid;
         this.mainPanel = mainPanel;
+        this.mazeGenerator = mazeGenerator;
 
         setTitle("Settings");
         setResizable(false);
         setLocationRelativeTo(null);
         setPreferredSize(new Dimension(300, 200));
         add(createColorOptions());
+        add(showAnimationOption(), BorderLayout.SOUTH);
 
         JLabel colorText = new JLabel("Select Color");
         colorText.setHorizontalAlignment(SwingConstants.CENTER);
@@ -112,6 +117,17 @@ public class SettingsWindow extends JDialog {
             }
         });
         return colorChoices;
+
+    }
+
+    private JCheckBox showAnimationOption() {
+        JCheckBox animationSelect = new JCheckBox("Show Animation", true);
+        animationSelect.addActionListener(e -> {
+            mazeGenerator.setAnimated();
+        });
+
+        return animationSelect;
+
 
     }
 
