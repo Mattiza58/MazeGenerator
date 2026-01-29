@@ -7,7 +7,7 @@ A Java Swing GUI maze generator utilizing a recursive backtracking algorithm
 ## The Algorithm
 Information can be found here: https://en.wikipedia.org/wiki/Maze_generation_algorithm
 
-- A big inspiration behind this project is the field of graph theory and algorithms involving it. Especially when it comes to Depth-First Search and Breadth-First Search, I wanted to find 
+- A big inspiration behind this project is the field of **graph theory** and algorithms involving it. Especially when it comes to **Depth-First Search** and **Breadth-First Search**, I wanted to find 
 a simple way to apply these concepts in a fun way.
 
 Mazes can be generated through various algorithms. There's Prim's, Kruskal's, and Wilson's. However, the simplest of which, is the "recursive backtracker," which is what I chose to use. Although, 
