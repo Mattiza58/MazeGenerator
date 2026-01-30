@@ -28,5 +28,10 @@ Note: This is for the iterative implementation
     - Choose a random neighbor
     - Remove the wall between the current cell and neighbor cell
     - Mark the chosen cell as visited and push it to the stack
+   
+
+## Demo (With Animation)
+![Maze Demo (1)](https://github.com/user-attachments/assets/4ab69429-833b-44d8-afdf-8f702efb0307)
+
 
 
